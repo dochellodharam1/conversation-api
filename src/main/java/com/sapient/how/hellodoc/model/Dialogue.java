@@ -19,4 +19,6 @@ public class Dialogue {
 
     private String intent;
     private String reply;
+    private String action;
+    private String type;
 }

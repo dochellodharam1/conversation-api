@@ -97,7 +97,7 @@
 	</style>
     <script type="text/javascript">
 		$(document).ready(function(){
-			var actions = '<a class="add" title="Add" data-toggle="tooltip"><i class="material-icons">&#xE03B;</i></a>' +
+			var controls = '<a class="add" title="Add" data-toggle="tooltip"><i class="material-icons">&#xE03B;</i></a>' +
 							'<a class="edit" title="Edit" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a>' +
 							'<a class="delete" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>';
 			var params = (function() {
@@ -131,12 +131,13 @@
 				data.content.forEach(function(d){
 					var tds = '';
 					$('table thead th').each(function() {
-						var key = $(this).attr("data-identifier");
-						if(key) {
-							tds += '<td data-type="' + key + '">' + d[key] + '</td>'
+						var formatStr = $(this).attr("data-format");
+						if(formatStr) {
+							var format = JSON.parse(formatStr);
+							tds += '<td data-type="' + format.name + '">' + d[format.name] + '</td>';
 						}
 					});
-					tds += '<td>' + actions + '</td>';
+					tds += '<td>' + controls + '</td>';
 					$('table tbody').append('<tr id="' + d.id + '">' + tds + '</tr>');
 				});
 				var pagination = $("ul.pagination");
@@ -154,24 +155,34 @@
 				var index = $("table tbody tr:last-child").index();
 				var tds = '';
 				$('table thead th').each(function() {
-					var key = $(this).attr("data-identifier");
-					if(key) {
-						tds += '<td><input type="text" class="form-control" name="' + key + '"></td>'
+					var formatStr = $(this).attr("data-format");
+					if(formatStr) {
+						var format = JSON.parse(formatStr);
+						switch(format.nature) {
+							case "text":
+								tds += '<td><input type="text" class="form-control" name="' + format.name + '" value="' + format.value + '"></td>'
+							break;
+							case "select":
+								tds += '<td><select class="form-control" name="' + format.name + '">';
+								format.options.forEach(function(i) {
+									var selected = i.k == format.value ? "selected" : "";
+									tds += '<option value="' + i.k + '" ' + selected + '>' + i.v + '</option>';
+								});
+								tds += '</select></td>';
+							break;
+						}
 					}
 				});
-				tds = '<td>' + actions + '</td>';
+				tds += '<td>' + controls + '</td>';
 				$("table").append('<tr>' + tds + '</tr>');
 				$("table tbody tr").eq(index + 1).find(".add, .edit").toggle();
 				$('[data-toggle="tooltip"]').tooltip();
 			});
-			var findInput = function(inputs, name){
-				return inputs.filter(function(i, j){return $(j).attr("name")==name;})
-			};
 			// Add row on add button click
 			$(document).on("click", ".add", function(){
 				var empty = false;
 				var row = $(this).parents("tr");
-				var input = row.find('input[type="text"]');
+				var input = row.find(".form-control");
 				input.each(function(){
 					if(!$(this).val()){
 						$(this).addClass("error");
@@ -185,9 +196,15 @@
 					var id = row.attr("id");
 					var method = id ? "PUT" : "POST";
 					var url = id ? urls.update + "/" + id : urls.create;
-					var intent = findInput(input, "intent").val();
-					var reply = findInput(input, "reply").val();
-					var data = '{ "intent": "' + intent + '", "reply": "' + reply + '" }';
+					var separator = '';
+					var data = '{ ';
+					input.each(function() {
+						var name = $(this).attr("name");
+						var value = $(this).val();
+						data += separator + '"' + name + '": "' + value + '"';
+						separator = ',';
+					});
+					data += ' }';
 					$.ajax({ 
 						url: url, 
 						method: method,  
@@ -208,7 +225,31 @@
 			$(document).on("click", ".edit", function(){
 				$(this).parents("tr").find("td:not(:last-child)").each(function(){
 					var type = $(this).attr("data-type");
-					$(this).html('<input type="text" class="form-control" name="' + type + '" value="' + $(this).text() + '">');
+					var value = $(this).text();
+					var td = $(this);
+					$('table thead th').each(function() {
+						var formatStr = $(this).attr("data-format");
+						if(formatStr) {
+							var format = JSON.parse(formatStr);
+							if(format.name == type) {
+								var input = '';
+								switch(format.nature) {
+									case "text":
+										input = '<input type="text" class="form-control" name="' + format.name + '" value="' + value + '">'
+									break;
+									case "select":
+										input += '<select class="form-control" name="' + format.name + '">';
+										format.options.forEach(function(i) {
+											var selected = i.k == value ? "selected" : "";
+											input += '<option value="' + i.k + '" ' + selected + '>' + i.v + '</option>';
+										});
+										input += '</select>';
+									break;
+								}
+								td.html(input);
+							}
+						}
+					});
 				});
 				$(this).parents("tr").find(".add, .edit").toggle();
 				$(".add-new").attr("disabled", "disabled");
@@ -245,9 +286,11 @@
 			data-url-delete="{baseURL}/data" >
             <thead>
             <tr>
-                <th data-identifier="intent">Intent</th>
-                <th data-identifier="reply">Reply</th>
-                <th>Actions</th>
+                <th data-format='{"name": "intent", "nature": "text", "value": ""}'>Intent</th>
+                <th data-format='{"name": "reply", "nature": "text", "value": ""}'>Reply</th>
+                <th data-format='{"name": "action", "nature": "select", "options": [{"k": "JUST_REPLY", "v":"JUST_REPLY"}, {"k": "MAP_SEARCH", "v":"MAP_SEARCH"}, {"k": "WEB_SEARCH", "v":"WEB_SEARCH"}], "value": "JUST_REPLY"}'>Action</th>
+                <th data-format='{"name": "type", "nature": "select", "options": [{"k": "CONTEXTUAL", "v":"CONTEXTUAL"}, {"k": "NON_CONTEXTUAL", "v":"NON_CONTEXTUAL"}], "value": "NON_CONTEXTUAL"}'>Type</th>
+                <th>Controls</th>
             </tr>
             </thead>
             <tbody>

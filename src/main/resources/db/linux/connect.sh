@@ -1,0 +1,1 @@
+mongo "mongodb+srv://cluster0-myirx.mongodb.net/phoenix_mongo_db"  --username phoenix_mongo_db_user

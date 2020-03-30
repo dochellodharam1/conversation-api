@@ -23,6 +23,7 @@ public class DataController {
     @Autowired
     private DialougeRepository repository;
 
+    @CrossOrigin
     @GetMapping
     public ResponseEntity<Page<Dialogue>> list(@PageableDefault(page = 0, size = 20)
                                                @SortDefault.SortDefaults({

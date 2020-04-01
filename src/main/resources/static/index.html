@@ -288,16 +288,22 @@
             <tr>
                 <th data-format='{"name": "intent", "nature": "text", "value": ""}'>Intent</th>
                 <th data-format='{"name": "reply", "nature": "text", "value": ""}'>Reply</th>
-                <th data-format='{"name": "action", "nature": "select", 
+                <th data-format='{"name": "action", "nature": "select",
 					"options": [
-						{"k": "JUST_REPLY", "v":"JUST_REPLY"}, 
+						{"k": "NO_ACTION", "v":"NO_ACTION"},
 						{"k": "MAP_SEARCH", "v":"MAP_SEARCH"}, 
 						{"k": "WEB_SEARCH", "v":"WEB_SEARCH"}, 
 						{"k": "DRUG_SEARCH", "v":"DRUG_SEARCH"}, 
 						{"k": "SYMPTOM_CHECK", "v":"SYMPTOM_CHECK"}, 
 						{"k": "REPEAT_PREVIOUS_REPLY", "v":"REPEAT_PREVIOUS_REPLY"}
 					], "value": "JUST_REPLY"}'>Action</th>
-                <th data-format='{"name": "type", "nature": "select", "options": [{"k": "CONTEXTUAL", "v":"CONTEXTUAL"}, {"k": "NON_CONTEXTUAL", "v":"NON_CONTEXTUAL"}], "value": "NON_CONTEXTUAL"}'>Type</th>
+                <th data-format='{"name": "whenToAct", "nature": "select",
+                    "options": [
+                        {"k": "NEVER", "v":"NEVER"},
+                        {"k": "AT_ONCE", "v":"AT_ONCE"},
+                        {"k": "AFTER_NEXT_INPUT", "v":"AFTER_NEXT_INPUT"}
+                    ], "value": "NON_CONTEXTUAL"}'>When to act</th>
+                <th data-format='{"name": "replyAfterAction", "nature": "text", "value": ""}'>replyAfterAction</th>
                 <th>Controls</th>
             </tr>
             </thead>
